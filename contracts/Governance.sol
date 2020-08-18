@@ -23,10 +23,10 @@ interface IGovernanceProxy {
 contract Governance is Ownable {
 
     IGovernanceProxy public governanceProxy;
-    IERC20Token[3] public tokenContract; // tokenContract[0] = MainToken, tokenContract[1] = ETN, tokenContract[2] = STOCK
-    IERC20Token[3] public escrowContract; // contract that hold (lock) investor's pre-minted tokens (0-Main, 1-ETN, 2-STOCK)
-    uint256[3] public circulationSupply;   // Circulation Supply of according tokens
-    uint256[3] public circulationSupplyUpdated; // timestamp when Circulation Supply was updated
+    IERC20Token[4] public tokenContract; // tokenContract[0] = MainToken, tokenContract[1] = ETN, tokenContract[2] = STOCK
+    IERC20Token[4] public escrowContract; // contract that hold (lock) investor's pre-minted tokens (0-Main, 1-ETN, 2-STOCK)
+    uint256[4] public circulationSupply;   // Circulation Supply of according tokens
+    uint256[4] public circulationSupplyUpdated; // timestamp when Circulation Supply was updated
     IWhitelist public whitelist;    // whitelist contract
     uint256 public closeTime;   // timestamp when votes will close
     uint256 public expeditedLevel = 10; // user who has this percentage of Main token circulation supply can expedite voting
@@ -37,7 +37,7 @@ contract Governance is Ownable {
 
     struct Rule {
         address contr;      // contract address which have to be triggered
-        uint8[3] majority;  // require more than this percentage of participants voting power (in according tokens).
+        uint8[4] majority;  // require more than this percentage of participants voting power (in according tokens).
         string funcAbi;     // function ABI (ex. "setGroupBonusRatio(uint256)")
     }
 
@@ -49,8 +49,8 @@ contract Governance is Ownable {
         bytes args; // ABI encoded arguments for proposal which is required to call appropriate function
         Status status;
         address creator;    // wallet address of ballot creator.
-        uint256[3] votesYea;  // YEA votes according communities (tokens)
-        uint256[3] totalVotes;  // The total voting power od all participant according communities (tokens)
+        uint256[4] votesYea;  // YEA votes according communities (tokens)
+        uint256[4] totalVotes;  // The total voting power od all participant according communities (tokens)
         address[] participant;  // the users who voted (primary address)
         uint256 processedParticipants; // The number of participant that was verified. Uses to split verification on many transactions
         mapping (address => Vote) votes; //Vote: Yea or Nay. If None -the user did not vote.
@@ -66,7 +66,7 @@ contract Governance is Ownable {
     mapping (uint256 => address[]) excluded; // The list of address that should be subtracted from TotalSupply to calculate Circulation Supply.
                                              // ex. Company wallet, System wallet, Downside protection, Vault smart contract.
 
-    event AddRule(address indexed contractAddress, string funcAbi, uint8[3] majorMain);
+    event AddRule(address indexed contractAddress, string funcAbi, uint8[4] majorMain);
     event SetNewAddress(address indexed previousAddress, address indexed newAddress);
     event BlockWallet(address indexed walletAddress, bool isAdded);
     event AddBallot(address indexed creator, uint256 indexed ruleId, uint256 indexed ballotId);
@@ -78,7 +78,7 @@ contract Governance is Ownable {
 
     constructor() public {
         // add rule with Simple majority (>50% participants) which allow to add another rules
-        rules.push(Rule(address(this), [50,0,0], "setRule(address,uint8[3],string)"));
+        rules.push(Rule(address(this), [50,0,0,0], "setRule(address,uint8[4],string)"));
     }
 
     /**
@@ -94,7 +94,7 @@ contract Governance is Ownable {
      * @return list of excluded address.
      */
     function getExcluded(uint256 index) external view returns(address[] memory) {
-        require(index >= 0 && index < 3, "Wrong index");
+        require(index >= 0 && index < 4, "Wrong index");
         return excluded[index];
     }
 
@@ -104,7 +104,7 @@ contract Governance is Ownable {
      * @param wallet List of addresses to add
      */
     function addExcluded(uint256 index, address[] memory wallet) external onlyOwner {
-        require(index >= 0 && index < 3, "Wrong index");
+        require(index >= 0 && index < 4, "Wrong index");
         for (uint i = 0; i < wallet.length; i++) {
             require(wallet[i] != address(0),"Zero address not allowed");
             excluded[index].push(wallet[i]);
@@ -117,7 +117,7 @@ contract Governance is Ownable {
      * @param wallet The address to remove
      */
     function removeExcluded(uint256 index, address wallet) external onlyOwner {
-        require(index >= 0 && index < 3, "Wrong index");
+        require(index >= 0 && index < 4, "Wrong index");
         require(wallet != address(0),"Zero address not allowed");
         uint len = excluded[index].length;
         for (uint i = 0; i < len; i++) {
@@ -172,7 +172,7 @@ contract Governance is Ownable {
      * @param index The index of token: 0 - Main, 1 - ETN, 2 - STOCK.
      */
     function setEscrowContract(IERC20Token escrow, uint index) external onlyOwner {
-        require(escrow != IERC20Token(0) && escrowContract[index] == IERC20Token(0),"Change address not allowed");
+        require(escrow != IERC20Token(0),"Change address not allowed");
         escrowContract[index] = escrow;
     }
 
@@ -229,7 +229,7 @@ contract Governance is Ownable {
      * @return true if address added.
      */
     function addPremintedWallet(address wallet) external returns(bool){
-        for (uint i = 0; i < 3; i++ ) {
+        for (uint i = 0; i < 4; i++ ) {
             if(address(escrowContract[i]) == msg.sender) {
                 isInEscrow[i][wallet] = true;
                 return true;
@@ -246,7 +246,7 @@ contract Governance is Ownable {
      */
     function addRule(
             address contr,
-            uint8[3] memory majority,
+            uint8[4] memory majority,
             string memory funcAbi
         ) external onlyOwner {
         require(contr != address(0), "Zero address");
@@ -259,7 +259,7 @@ contract Governance is Ownable {
      * @param ruleId The rules index
      * @param majority The majority level (%) for the tokens (index: 0 - Main, 1 - ETN, 2 - STOCK).
      */
-    function changeRuleMajority(uint256 ruleId, uint8[3] memory majority) external onlyOwner {
+    function changeRuleMajority(uint256 ruleId, uint8[4] memory majority) external onlyOwner {
         Rule storage r = rules[ruleId];
         r.majority = majority;
     }
@@ -281,7 +281,7 @@ contract Governance is Ownable {
      */
     function getRule(uint256 ruleId) external view
         returns(address contr,
-        uint8[3] memory majority,
+        uint8[4] memory majority,
         string memory funcAbi)
     {
         Rule storage r = rules[ruleId];
@@ -314,8 +314,8 @@ contract Governance is Ownable {
         bytes memory args,
         Status status,
         address creator,
-        uint256[3] memory totalVotes,
-        uint256[3] memory votesYea)
+        uint256[4] memory totalVotes,
+        uint256[4] memory votesYea)
     {
         Ballot storage b = ballots[ballotId];
         return (b.closeVote, b.ruleId, b.args, b.status, b.creator,b.totalVotes,b.votesYea);
@@ -376,7 +376,7 @@ contract Governance is Ownable {
         require(ruleId < rules.length,"Wrong rule ID");
         Rule storage r = rules[ruleId];
         _getCirculation(r.majority);   //require update circulationSupply of Main token
-        (address primary, uint256[3] memory power) = _getVotingPower(msg.sender, r.majority, false);
+        (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, r.majority, false);
         uint256 percentage = power[0] * 100 / circulationSupply[0]; // ownership percentage of main token
         require(percentage > 0, "Less then 1% of circulationSupply");
         uint256 ballotId = ballots.length;
@@ -409,7 +409,7 @@ contract Governance is Ownable {
         // Add vote Yea
         ballots[ballotId].participant.push(primary); // add creator primary address as participant
         ballots[ballotId].votes[primary] = Vote.Yea;
-        for (uint i = 0; i < 3; i++) {
+        for (uint i = 0; i < 4; i++) {
             if (power[i] > 0) {
                 ballots[ballotId].power[primary][i] = power[i];
             }
@@ -449,12 +449,12 @@ contract Governance is Ownable {
         require(v != Vote.None, "Should vote Yea or Nay");
         require(b.status == Status.New, "Voting for disallowed");
         require(b.closeVote > block.timestamp, "Ballot expired");
-        (address primary, uint256[3] memory power) = _getVotingPower(msg.sender, rules[b.ruleId].majority, false);
+        (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, rules[b.ruleId].majority, false);
         if (b.votes[primary] == Vote.None) {
             // Add vote
             b.participant.push(primary); // add creator primary address as participant
             b.votes[primary] = v;
-            for (uint i = 0; i < 3; i++) {
+            for (uint i = 0; i < 4; i++) {
                 if (power[i] > 0) {
                     b.power[primary][i] = power[i];  // store user's voting power
                     b.totalVotes[i] += power[i];
@@ -467,7 +467,7 @@ contract Governance is Ownable {
         else if (b.votes[primary] != v) {
             // Change vote
             b.votes[primary] = v;
-            for (uint i = 0; i < 3; i++) {
+            for (uint i = 0; i < 4; i++) {
                 if (power[i] > 0) {
                     if (v == Vote.Yea)
                         b.votesYea[i] += power[i];
@@ -515,7 +515,11 @@ contract Governance is Ownable {
      * @dev Calculate Circulation Supply = Total supply - sum(excluded addresses balance)
      */
     function getCirculation() external {
-        uint8[3] memory m = [50,50,50];
+        uint8[4] memory m;
+        for (uint i = 0; i < 4; i++) {
+            if (tokenContract[i] != IERC20Token(0))
+                m[i] = 50;
+        }
         _getCirculation(m);
     }
 
@@ -545,8 +549,8 @@ contract Governance is Ownable {
         Ballot storage b = ballots[ballotId];
         Rule storage r = rules[b.ruleId];
         require(b.status == Status.New, "Can not be verified");
-        uint256[3] memory totalVotes;
-        uint256[3] memory totalYea;
+        uint256[4] memory totalVotes;
+        uint256[4] memory totalYea;
         if (b.processedParticipants > 0) {  // continue verification
             totalVotes = b.totalVotes;
             totalYea = b.votesYea;
@@ -555,8 +559,8 @@ contract Governance is Ownable {
         if (len > b.participant.length)
             len = b.participant.length;
         for (uint i = b.processedParticipants; i < len; i++) {
-            (address primary, uint256[3] memory power) = _getVotingPower(b.participant[i], r.majority, true);
-            for (uint j = 0; j < 3; j++) {
+            (address primary, uint256[4] memory power) = _getVotingPower(b.participant[i], r.majority, true);
+            for (uint j = 0; j < 4; j++) {
                 if (power[j] > 0) {
                     totalVotes[j] += power[j];
                     if (b.votes[primary] == Vote.Yea){
@@ -589,8 +593,8 @@ contract Governance is Ownable {
                 b.closeVote = block.timestamp;
                 if (unprocessedBallot == ballotId) unprocessedBallot++;
             }
-            // else continue voting and reset counter to be able recount votes
-            b.participant = 0;
+            else
+                b.processedParticipants = 0; //continue voting and reset counter to be able recount votes
         }
     }
 
@@ -603,16 +607,16 @@ contract Governance is Ownable {
      * @return result the majority Yea (1), Nay (2) in case absolute majority, or None (0) if no majority.
     */
     function _checkMajority(
-        uint8[3] memory tokensApply,
-        uint256[3] memory votesYea,
-        uint256[3] memory totalVotes,
+        uint8[4] memory tokensApply,
+        uint256[4] memory votesYea,
+        uint256[4] memory totalVotes,
         bool isClosed)
         internal view returns(Vote result)
     {
         uint256 majorityYea;
         uint256 majorityNay;
         uint256 requireMajority;
-        for (uint i = 0; i < 3; i++) {
+        for (uint i = 0; i < 4; i++) {
             if (tokensApply[i] != 0) {
                 requireMajority++;
                 // check majority of circulation supply at first
@@ -632,9 +636,9 @@ contract Governance is Ownable {
      * @dev Calculate Circulation Supply = Total supply - sum(excluded addresses balance)
      * @param tokensApply if element of array = 0 then exclude that token (index: 0 = MainToken, 1 = ETN, 2 = STOCK)
      */
-    function _getCirculation(uint8[3] memory tokensApply) internal {
-        uint256[3] memory total;
-        for (uint i = 0; i < 3; i++) {
+    function _getCirculation(uint8[4] memory tokensApply) internal {
+        uint256[4] memory total;
+        for (uint i = 0; i < 4; i++) {
             if (tokensApply[i] != 0 && circulationSupplyUpdated[i] != block.timestamp) {
                 for (uint j = 0; j < excluded[i].length; j++) {
                     total[i] += tokenContract[i].balanceOf(excluded[i][j]);
@@ -658,17 +662,24 @@ contract Governance is Ownable {
      * @return primary - The primary address the wallet belong.
      * @return votingPower - the voting power according communities.
      */
-    function _getVotingPower(address voter, uint8[3] memory tokensApply, bool isPrimary) internal view
-        returns(address primary, uint256[3] memory votingPower)
+    function _getVotingPower(address voter, uint8[4] memory tokensApply, bool isPrimary) internal view
+        returns(address primary, uint256[4] memory votingPower)
     {
         if (isPrimary)
             primary = voter;
         else
             primary = whitelist.address_belongs(voter);
-        require (primary != address(0), "Address is not whitelisted");
         require (!blockedWallets[primary], "Wallet is blocked for voting");
-        address[] memory userWallets = whitelist.getUserWallets(primary);
-        for (uint i = 0; i < 3; i++) {
+        address[] memory userWallets;
+        if (primary != address(0)) {
+            userWallets = whitelist.getUserWallets(primary);
+        }
+        else {
+            primary = voter;
+            userWallets = new address[](0);
+        }
+        bool hasPower = false;
+        for (uint i = 0; i < 4; i++) {
             if (tokensApply[i] != 0) {
                 votingPower[i] += tokenContract[i].balanceOf(primary);
                 if (escrowContract[i] != IERC20Token(0) && isInEscrow[i][primary]) {
@@ -680,8 +691,10 @@ contract Governance is Ownable {
                         votingPower[i] += escrowContract[i].balanceOf(userWallets[j]);
                     }
                 }
+                if (votingPower[i] > 0) hasPower = true;
             }
         }
+        require(isPrimary || hasPower, "No voting power");
     }
 
     /**
