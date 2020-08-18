@@ -180,7 +180,7 @@ contract Governance is Ownable {
      * @dev Set whitelist contract address to a newAddr.
      * @param newAddr The address of whitelist contract.
      */
-    function setWwitelist(address newAddr) external onlyOwner {
+    function setWhitelist(address newAddr) external onlyOwner {
         require(newAddr != address(0),"Zero address not allowed");
         emit SetNewAddress(address(whitelist), newAddr);
         whitelist = IWhitelist(newAddr);
