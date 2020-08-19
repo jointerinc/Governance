@@ -254,8 +254,8 @@ contract Governance is Ownable {
             month++;
         }
         closeTime = timestampFromDateTime(year, month, day, 0, 0, 0);    // 1st day of each month at 00:00:00 UTC
-
-        for (uint i = unprocessedBallot; i < ballots.length; i++) {
+        uint len = ballots.length;
+        for (uint i = unprocessedBallot; i < len; i++) {
             if (ballots[i].status == Status.Pending) {
                 if(ballots[i].closeVote == 0)
                     ballots[i].closeVote = closeTime;
@@ -486,7 +486,7 @@ contract Governance is Ownable {
      * @param ballotId The ballot index
      * @param v The user vote (1 - Yea, 2 - Nay)
      */
-    function vote(uint256 ballotId, Vote v) public {
+    function vote(uint256 ballotId, Vote v) external {
         require(ballotId < ballots.length,"Wrong ballot ID");
         Ballot storage b = ballots[ballotId];
         require(v != Vote.None, "Should vote Yea or Nay");
@@ -548,7 +548,8 @@ contract Governance is Ownable {
      * @param part The number of participant to verify. Uses to avoid Out of Gas.
      */
     function verifyNext(uint part) external {
-        for (uint i = unprocessedBallot; i < ballots.length; i++) {
+        uint len = ballots.length;
+        for (uint i = unprocessedBallot; i < len; i++) {
             if (ballots[i].status == Status.New) {
                 _verify(i, part);
                 return; // exit after verification to avoid Out of Gas error
@@ -690,7 +691,8 @@ contract Governance is Ownable {
         uint256[4] memory total;
         for (uint i = 0; i < 4; i++) {
             if (tokensApply[i] != 0 && circulationSupplyUpdated[i] != block.timestamp) {
-                for (uint j = 0; j < excluded[i].length; j++) {
+                uint len = excluded[i].length;
+                for (uint j = 0; j < len; j++) {
                     total[i] += tokenContract[i].balanceOf(excluded[i][j]);
                     if (escrowContract[i] != IERC20Token(0) && isInEscrow[i][excluded[i][j]]) {
                         total[i] += escrowContract[i].balanceOf(excluded[i][j]);
