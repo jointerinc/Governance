@@ -3,6 +3,7 @@ pragma solidity ^0.6.9;
 
 // After deploy and setup necessaries rules and addresses, need to change the Owner address to the GovernanceProxy address.
 import "./Ownable.sol";
+import "./EnumerableSet.sol";
 
 interface IWhitelist {
     function address_belongs(address _who) external view returns (address);
@@ -21,6 +22,10 @@ interface IGovernanceProxy {
 }
 
 contract Governance is Ownable {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
+    EnumerableSet.AddressSet walletsCEO;    // wallets of CEO. It should participate in votes with Absolute majority, otherwise Escrowed wallets will not be counted.
+    uint256 public requiredCEO;             // number COE wallets require to participate in vote
 
     IGovernanceProxy public governanceProxy;
     IERC20Token[4] public tokenContract; // tokenContract[0] = MainToken, tokenContract[1] = ETN, tokenContract[2] = STOCK
@@ -55,6 +60,7 @@ contract Governance is Ownable {
         uint256 processedParticipants; // The number of participant that was verified. Uses to split verification on many transactions
         mapping (address => Vote) votes; //Vote: Yea or Nay. If None -the user did not vote.
         mapping (address => mapping (uint256 => uint256)) power;   // Voting power. primary address => community index => voting power
+        uint256 ceoParticipate; //number of ceo wallets participated at voting
     }
 
     Ballot[] ballots;
@@ -75,12 +81,49 @@ contract Governance is Ownable {
     event NewVote(address indexed voter, address indexed primary, uint256 indexed ballotId);
     event ChangeVote(address indexed voter, address indexed primary, uint256 indexed ballotId);
     event PosableMajority(uint256 indexed ballotId);
+    event CEOWallet(address indexed wallet, bool add);
 
-    constructor() public {
-        // add rule with Simple majority (>50% participants) which allow to add another rules
-        rules.push(Rule(address(this), [50,0,0,0], "setRule(address,uint8[4],string)"));
+    /**
+     * @dev Throws if called by any account other than the one of COE wallets.
+     */
+    modifier onlyCEO() {
+        require(walletsCEO.contains(msg.sender),"Not CEO");
+        _;
     }
 
+    constructor(address CEO_wallet) public {
+        require(CEO_wallet != address(0),"Zero address not allowed");
+        // add rule with Simple majority (>50% participants) which allow to add another rules
+        rules.push(Rule(address(this), [50,0,0,0], "setRule(address,uint8[4],string)"));
+        walletsCEO.add(CEO_wallet);
+        requiredCEO = 1;
+    }
+
+
+    function addCEOWallet(address CEO_wallet) external onlyCEO {
+        require(CEO_wallet != address(0),"Zero address not allowed");
+        walletsCEO.add(CEO_wallet);
+        requiredCEO = walletsCEO.length();
+        emit CEOWallet(CEO_wallet, true);
+    }
+
+    function removeCEOWallet(address CEO_wallet) external onlyCEO {
+        require(CEO_wallet != address(0),"Zero address not allowed");
+        require(walletsCEO.length() > 1, "Should left at least one CEO wallet");
+        walletsCEO.remove(CEO_wallet);
+        requiredCEO = walletsCEO.length();
+        emit CEOWallet(CEO_wallet, false);
+    }
+
+    function setRequiredCEO(uint256 req) external onlyCEO {
+        require(req <= walletsCEO.length(),"More then added wallets");
+        requiredCEO = req;
+    }
+
+    function getWalletsCEO() external view returns(address[] memory wallets) {
+        return walletsCEO._values;
+    }
+    
     /**
      * @dev Accept Governance in case changing voting contract.
      */    
@@ -376,7 +419,7 @@ contract Governance is Ownable {
         require(ruleId < rules.length,"Wrong rule ID");
         Rule storage r = rules[ruleId];
         _getCirculation(r.majority);   //require update circulationSupply of Main token
-        (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, r.majority, false);
+        (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, r.majority, false, true);
         uint256 percentage = power[0] * 100 / circulationSupply[0]; // ownership percentage of main token
         require(percentage > 0, "Less then 1% of circulationSupply");
         uint256 ballotId = ballots.length;
@@ -449,7 +492,7 @@ contract Governance is Ownable {
         require(v != Vote.None, "Should vote Yea or Nay");
         require(b.status == Status.New, "Voting for disallowed");
         require(b.closeVote > block.timestamp, "Ballot expired");
-        (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, rules[b.ruleId].majority, false);
+        (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, rules[b.ruleId].majority, false, true);
         if (b.votes[primary] == Vote.None) {
             // Add vote
             b.participant.push(primary); // add creator primary address as participant
@@ -461,6 +504,10 @@ contract Governance is Ownable {
                     if (v == Vote.Yea)
                         b.votesYea[i] += power[i];
                 }
+            }
+            // add CEO wallet as participant only for Absolute majority voting
+            if (rules[b.ruleId].majority[0] >= absoluteLevel && walletsCEO.contains(msg.sender)) {
+                b.ceoParticipate++;
             }
             emit NewVote(msg.sender, primary, ballotId);
         }
@@ -558,8 +605,11 @@ contract Governance is Ownable {
         uint256 len = b.processedParticipants + part;
         if (len > b.participant.length)
             len = b.participant.length;
+        bool acceptEscrowed = true;
+        if (r.majority[0] >= absoluteLevel && b.ceoParticipate < requiredCEO)  // only for Absolute majority voting
+            acceptEscrowed = false; // reject escrowed wallets if CED did not vote with required number of wallets
         for (uint i = b.processedParticipants; i < len; i++) {
-            (address primary, uint256[4] memory power) = _getVotingPower(b.participant[i], r.majority, true);
+            (address primary, uint256[4] memory power) = _getVotingPower(b.participant[i], r.majority, true, acceptEscrowed);
             for (uint j = 0; j < 4; j++) {
                 if (power[j] > 0) {
                     totalVotes[j] += power[j];
@@ -662,7 +712,7 @@ contract Governance is Ownable {
      * @return primary - The primary address the wallet belong.
      * @return votingPower - the voting power according communities.
      */
-    function _getVotingPower(address voter, uint8[4] memory tokensApply, bool isPrimary) internal view
+    function _getVotingPower(address voter, uint8[4] memory tokensApply, bool isPrimary, bool acceptEscrowed) internal view
         returns(address primary, uint256[4] memory votingPower)
     {
         if (isPrimary)
@@ -679,15 +729,16 @@ contract Governance is Ownable {
             userWallets = new address[](0);
         }
         bool hasPower = false;
+    
         for (uint i = 0; i < 4; i++) {
             if (tokensApply[i] != 0) {
                 votingPower[i] += tokenContract[i].balanceOf(primary);
-                if (escrowContract[i] != IERC20Token(0) && isInEscrow[i][primary]) {
+                if (acceptEscrowed && escrowContract[i] != IERC20Token(0) && isInEscrow[i][primary]) {
                     votingPower[i] += escrowContract[i].balanceOf(primary);
                 }
                 for(uint j = 0; j < userWallets.length; j++) {
                     votingPower[i] += tokenContract[i].balanceOf(userWallets[j]);
-                    if (escrowContract[i] != IERC20Token(0) && isInEscrow[i][userWallets[j]]) {
+                    if (acceptEscrowed && escrowContract[i] != IERC20Token(0) && isInEscrow[i][userWallets[j]]) {
                         votingPower[i] += escrowContract[i].balanceOf(userWallets[j]);
                     }
                 }
