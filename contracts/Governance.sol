@@ -308,6 +308,17 @@ contract Governance is Ownable {
     }
 
     /**
+     * @dev Change destination contract address of rules.
+     * @param ruleId The rules index
+     * @param contr The new contract address of selected rule.
+     */
+    function changeRuleAddress(uint256 ruleId, address contr) external onlyOwner {
+        require(contr != address(0), "Zero address");
+        Rule storage r = rules[ruleId];
+        r.contr = contr;
+    }
+
+    /**
      * @dev Get total number of rules.
      * @return The total number of rules.
      */
