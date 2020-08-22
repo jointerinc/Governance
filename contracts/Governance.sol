@@ -70,7 +70,7 @@ contract Governance is Ownable {
     mapping (address => bool) public blockedWallets;    // The wallets which are excluded from voting
     mapping (uint256 => mapping(address => bool)) public isInEscrow;    // The wallets which may has pre-minted tokens. Token index => wallet
     mapping (uint256 => address[]) excluded; // The list of address that should be subtracted from TotalSupply to calculate Circulation Supply.
-                                             // ex. Company wallet, System wallet, Downside protection, Vault smart contract.
+                                             // ex. Company wallet, Downside protection, Vault smart contract.
 
     event AddRule(address indexed contractAddress, string funcAbi, uint8[4] majorMain);
     event SetNewAddress(address indexed previousAddress, address indexed newAddress);
@@ -431,8 +431,14 @@ contract Governance is Ownable {
         Rule storage r = rules[ruleId];
         _getCirculation(r.majority);   //require update circulationSupply of Main token
         (address primary, uint256[4] memory power) = _getVotingPower(msg.sender, r.majority, false, true);
-        uint256 percentage = power[0] * 100 / circulationSupply[0]; // ownership percentage of main token
-        require(percentage > 0, "Less then 1% of circulationSupply");
+        uint256 highestPercentage;
+        for (uint i = 0; i < 4; i++) {
+            if (circulationSupply[i] > 0) {
+                uint256 percentage = power[i] * 100 / circulationSupply[i]; // ownership percentage of token
+                if (percentage > highestPercentage) highestPercentage = percentage;
+            }
+        }
+        require(highestPercentage > 0, "Less then 1% of circulationSupply");
         uint256 ballotId = ballots.length;
         Ballot memory b;
         b.ruleId = ruleId;
@@ -441,7 +447,7 @@ contract Governance is Ownable {
         b.votesYea = power;
         b.totalVotes = power;
 
-        if(percentage >= expeditedLevel && isExpedited && r.majority[0] < absoluteLevel) {
+        if(highestPercentage >= expeditedLevel && isExpedited && r.majority[0] < absoluteLevel) {
             // proposal can be expedited if user has 10% of Main token circulation supply
             // and requiring majority is less then 90%
             b.closeVote = 24 hours;
@@ -470,7 +476,7 @@ contract Governance is Ownable {
         }
         emit NewVote(msg.sender, primary, ballotId);
 
-        if (percentage >= 50) {
+        if (highestPercentage >= 50) {
             // Check creator voting power for majority 50%+1 of total circulation supply
             if (_checkMajority(r.majority, power, power, false) == Vote.Yea) { // check Instant execution
                 ballots[ballotId].status = Status.Approved;
