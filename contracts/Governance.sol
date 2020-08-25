@@ -621,7 +621,7 @@ contract Governance is Ownable {
             totalYea = b.votesYea;
         }
         uint256 len = b.processedParticipants + part;
-        if (len > b.participant.length)
+        if (len > b.participant.length || b.closeVote > block.timestamp) // if voting is not closed only etire number of participants should be count
             len = b.participant.length;
         bool acceptEscrowed = true;
         if (r.majority[0] >= absoluteLevel && b.ceoParticipate < requiredCEO)  // only for Absolute majority voting
