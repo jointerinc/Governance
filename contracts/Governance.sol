@@ -94,7 +94,7 @@ contract Governance is Ownable {
     constructor(address CEO_wallet) public {
         require(CEO_wallet != address(0),"Zero address not allowed");
         // add rule with Absolute majority (above 90% participants) which allow to add another rules
-        rules.push(Rule(address(this), [90,0,0,0], "setRule(address,uint8[4],string)"));
+        rules.push(Rule(address(this), [90,0,0,0], "addRule(address,uint8[4],string)"));
         walletsCEO.add(CEO_wallet);
         requiredCEO = 1;
     }
