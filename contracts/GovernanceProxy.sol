@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: No License (None)
 pragma solidity ^0.6.9;
 
 // This contract address should be the Owner of other contracts which setting we will change.

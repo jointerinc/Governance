@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: No License (None)
 pragma solidity ^0.6.9;
 
 // After deploy and setup necessaries rules and addresses, need to change the Owner address to the GovernanceProxy address.
