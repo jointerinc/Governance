@@ -100,7 +100,7 @@ module.exports =async function(deployer) {
 
     await GatewayInstance.setEscrowContract(escrowAddress);
 
-    await GatewayInstance.setAdmin(CEOwallet);
+    await GatewayInstance.setAdmin(ownerWallet);
 
     // Add Channels and Wallets (may be done later)
     await GatewayInstance.addChannel("Gateway supply"); // group ID: 0
