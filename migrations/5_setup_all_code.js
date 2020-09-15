@@ -1,5 +1,3 @@
-
-// this address should be provided by Jude
 // company wallet address which receive all pre-minted tokens and can manage with it in Escrow contract
 const fs  = require("fs");
 const { promisify } = require('util')
@@ -20,15 +18,15 @@ const {ownerWallet,CompanyWallet,CEOwallet } = require("../constant");
 
 // const JointerEscrowContractAddress = ""; // Joiter Ecrow address require for Edge deployer
 
-const MainTokenContract = "";
-const WhiteListContract = "";
+const MainTokenContract = "0xcd899e343a192ac3ce6530ce0ed9009275a2c701";
+const WhiteListContract = "0x679024a6328d24BA5BD566C4D6C87DbFcE005724";
 
 const Auction = ""; // Auction contract address
 const Liquidity = ""; // Liquidity contract address
 const Protection = ""; // Auction Protection contract address
 const TokenVaultContract = "";
 const MainReserveContract = ""; // Bancor pool that holds JNTR tokens
-const AuctionRegistery = "";
+const AuctionRegistery = "0x694c28Cbf17C5c1bdee063feF91C258fA578c0B1";
 
 module.exports =async function(deployer) {
 
@@ -83,36 +81,6 @@ module.exports =async function(deployer) {
     await EscrowedGovernanceInstance.addExcluded(0,[CompanyWallet]);
 
     await EscrowedGovernanceInstance.manageBlockedWallet(CompanyWallet, true);
-
-    await EscrowInstance.setTokenContract(MainTokenContract);
-
-    await EscrowInstance.setGatewayContract(gatewayAddress);
-
-    await EscrowInstance.updateRegistery(AuctionRegistery); 
-
-    await EscrowInstance.setGovernanceContract(governanceAddress);
-
-    await EscrowInstance.init();
-    
-    await EscrowInstance.transferOwnership(escrowedGovernanceProxyAddress); 
-
-    await GatewayInstance.setTokenContract(MainTokenContract);
-
-    await GatewayInstance.setEscrowContract(escrowAddress);
-
-    await GatewayInstance.setAdmin(ownerWallet);
-
-    // Add Channels and Wallets (may be done later)
-    await GatewayInstance.addChannel("Gateway supply"); // group ID: 0
-    //await GatewayInstance.addWallet(0,"Bancor",MainReserveContract); // Bancor wallet, where to send JNTR
-    await GatewayInstance.addChannel("Crypto exchanges"); // group ID: 1
-    
-    // //await GatewayInstance.addWallet(1,"HitBTC","0x9D76C6bDe437490d256f8B4369890eaB123B62C4"); // Deposit address in Exchange
-    // //await GatewayInstance.addWallet(1,"Binance","0x9D76C6bDe437490d256f8B4369890eaB123B62C4"); // Deposit address in Exchange
-    // await GatewayInstance.addChannel("SmartSwap P2C"); // group ID: 2
-    // await GatewayInstance.addWallet(2,"SmartSwap P2C",SmartSwapP2CContract);  // SmartSwap P2C contract address
-    // await GatewayInstance.setJointerVotingContract(EscrowedGovernanceProxy);  // when deploy Edge contract, set Jointer EscrowedGovernanceProxy
-    await GatewayInstance.transferOwnership(escrowedGovernanceProxyAddress); // All changes may be done only via Escrowed Governance (voting)
 
     const EscrowedRules = [
         {
@@ -467,17 +435,8 @@ module.exports =async function(deployer) {
           i++;
       }
 
-    await GovernanceInstance.transferOwnership(governanceProxyAddress); // Governance become the Owner  
-    await EscrowedGovernanceInstance.transferOwnership(escrowedGovernanceProxyAddress); 
+    //await GovernanceInstance.transferOwnership(governanceProxyAddress); // Governance become the Owner  
+    //await EscrowedGovernanceInstance.transferOwnership(escrowedGovernanceProxyAddress); 
 
 
  };
-  
- 
-//  "Escrow": "0x0Cdb8BA7e9D0A6039d9FD8556957F979A35FFB11",
-//   "Governance": "0x56C0D40a90B084c079778a25c56982E22A1aF5e3",
-//   "GovernanceProxy": "0xb98D1Ae24c4dEc40491004fc20533f7ea492B9A3",
-//   "EscrowedGovernance": "0xDC0D852A9bd45A23AEB9C45fA57F6b61BA4E94D6",
-//   "EscrowedGovernanceProxy": "0xF86D58C7a624552600ac7A564F3F2A50481eF416",
-//   "Gateway": "0x4B930356807e5A89d755ef4BFACd826c6853B653",
-//   "RealEstate": "0x37555A6bfb97c02723B192205F7edd14066Bc0CF"
