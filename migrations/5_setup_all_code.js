@@ -21,11 +21,11 @@ const {ownerWallet,CompanyWallet,CEOwallet } = require("../constant");
 const MainTokenContract = "0xcd899e343a192ac3ce6530ce0ed9009275a2c701";
 const WhiteListContract = "0x679024a6328d24BA5BD566C4D6C87DbFcE005724";
 
-const Auction = ""; // Auction contract address
-const Liquidity = ""; // Liquidity contract address
-const Protection = ""; // Auction Protection contract address
-const TokenVaultContract = "";
-const MainReserveContract = ""; // Bancor pool that holds JNTR tokens
+const Auction = "0xa65cd8e55825548917713006949a9888bf6a4e08"; // Auction contract address
+const Liquidity = "0xe08fbFE40d0Eb16F844ca761BaE4D60b2f3c010a"; // Liquidity contract address
+const Protection = "0x80fD7DF9233fCD817397ee2E156Bbf20eB3f53b5"; // Auction Protection contract address
+const TokenVaultContract = "0x3c90514cDA4EF093C4B5FD5Aab9Ec99EeF28EE34";
+const MainReserveContract = "0xc98791dc2e1151571edb62e2cd46b0289a272d71"; // Bancor pool that holds JNTR tokens
 const AuctionRegistery = "0x694c28Cbf17C5c1bdee063feF91C258fA578c0B1";
 
 module.exports =async function(deployer) {

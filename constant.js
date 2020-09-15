@@ -1,7 +1,7 @@
 
-const ownerWallet = "0xEcF2659415FD22A46a83a1592558c63c00968C89";
-const CompanyWallet = "0x3A8eb636a15c88e338D99c7074d74cac6dc86fD5";
-const CEOwallet = "0x98452666814c73ebff150f3d55ba4230a6c73f77";
+const ownerWallet = "0xD99634a54e2295f23d4DBD5B004f73D4ed0474F5";
+const CompanyWallet = "0xc326DF3Bec90f94887d2756E03B51a222F2b0de4";
+const CEOwallet = "0x154A7eD86F3CceECfb54fD03034b3311D102399e";
 
 module.exports = {
 

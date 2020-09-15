@@ -42,16 +42,18 @@ module.exports =async function(deployer) {
 
     await GatewayInstance.setEscrowContract(escrowAddress);
 
-    await GatewayInstance.setAdmin(ownerWallet);
+    await GatewayInstance.setAdmin(CompanyWallet);
 
     // Add Channels and Wallets (may be done later)
-    await GatewayInstance.addChannel("Gateway supply"); // group ID: 0
+    await GatewayInstance.addChannel("Gateway supply"); // Channel ID: 0
     //await GatewayInstance.addWallet(0,"Bancor",MainReserveContract); // Bancor wallet, where to send JNTR
-    await GatewayInstance.addChannel("Crypto exchanges"); // group ID: 1
+    await GatewayInstance.addWallet(0,"CoinTiger integration","0x5944E37E1112e6643cE9A5734382A963f6A75CeE"); // CoinTiger integration wallet, where to send JNTR
+
+    await GatewayInstance.addChannel("Crypto exchanges"); // Channel ID: 1
 
     // await GatewayInstance.addWallet(1,"HitBTC","0x9D76C6bDe437490d256f8B4369890eaB123B62C4"); // Deposit address in Exchange
     // await GatewayInstance.addWallet(1,"Binance","0x9D76C6bDe437490d256f8B4369890eaB123B62C4"); // Deposit address in Exchange
-    await GatewayInstance.addChannel("SmartSwap P2C"); // group ID: 2
+    await GatewayInstance.addChannel("SmartSwap P2C"); // Channel ID: 2
     // await GatewayInstance.addWallet(2,"SmartSwap P2C",SmartSwapP2CContract);  // SmartSwap P2C contract address
     // await GatewayInstance.setJointerVotingContract(EscrowedGovernanceProxy);  // when deploy Edge contract, set Jointer EscrowedGovernanceProxy
     
