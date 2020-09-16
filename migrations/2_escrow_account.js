@@ -20,11 +20,11 @@ module.exports =async function(deployer) {
     { from: ownerWallet }
   );
   EscrowInstance = await Escrow.deployed();
-/*
+
   currentdata = await readFileAsync(path.resolve(__dirname, '../latestContract.json'));
   currentdata = JSON.parse(currentdata);
   currentdata["Escrow"] = Escrow.address;
   await writeFileAsync(path.resolve(__dirname, '../latestContract.json'), JSON.stringify(currentdata,undefined,2));
-*/
+
 };
  
