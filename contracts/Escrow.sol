@@ -766,8 +766,9 @@ contract Escrow is AuctionRegistery {
     // Withdraw ETH in case sending failed
     function withdraw() external {
         require(balancesETH[msg.sender] > 0, "No ETH");
+        uint value = balancesETH[msg.sender];
         balancesETH[msg.sender] = 0;
-        msg.sender.transfer(balancesETH[msg.sender]);
+        msg.sender.transfer(value);
     }
 
     // Move user from one group to another
