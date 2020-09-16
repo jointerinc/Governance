@@ -43,15 +43,13 @@ module.exports =async function(deployer) {
 
     EscrowInstance = await Escrow.at(escrowAddress);
     GovernanceInstance = await Governance.at(governanceAddress);
-    GovernanceProxyInstance = await GovernanceProxy.at(governanceProxyAddress);
 
     EscrowedGovernanceInstance = await Governance.at(escrowedGovernanceAddress);
-    EscrowedGovernanceProxyInstance = await GovernanceProxy.at(escrowedGovernanceProxyAddress);
 
     GatewayInstance = await Gateway.at(gatewayAddress);
 
     RealEstateInstance = await RealEstate.at(realEstateAddress);
-
+/*
     await GovernanceInstance.setTokenContract(MainTokenContract, 0);
 
     // await GovernanceInstance.setTokenContract(JointerEscrowContractAddress, 3); // 4th community require for Edge co-voting
@@ -67,7 +65,7 @@ module.exports =async function(deployer) {
     await GovernanceInstance.addExcluded(0,[CompanyWallet,TokenVaultContract,Protection,MainReserveContract]);
 
     await GovernanceInstance.manageBlockedWallet(CompanyWallet, true); 
-
+*/
     await EscrowedGovernanceInstance.setTokenContract(escrowAddress, 0);
 
     // await EscrowedGovernanceInstance.setTokenContract(JointerEscrowContractAddress, 3); // 4th community require for Edge co-voting
@@ -185,13 +183,13 @@ module.exports =async function(deployer) {
     
       // adding rules (the settings which can be changed by voting) to the Governance contract
       const Rules = [
-        {
+        /*{
             //name: "updateContractAddress in Registry",
             address: AuctionRegistery,    // AuctionRegistry contract address
             ABI: "updateContractAddress(bytes32,address)",
             // Set Majority level according Jude direction. By default I set Absolute Majority (90%) to JNTR token community.
             majority: [90,0,0,0],   // Majority percentage according tokens community [Main (JNTR), ETN, STOCK, JNTR co-voting with Edge (if needed)]
-        },
+        },*/
         {
             //name: "setGroupBonusRatio",
             address: Auction, // Auction contract address
