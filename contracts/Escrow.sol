@@ -328,11 +328,12 @@ contract Escrow is AuctionRegistery {
      * @dev Deposit fee from Auction contract and add it to the Company wallet.
      * @param value The fee value.
      */
-    function depositFee(uint256 value) external {
+    function depositFee(uint256 value) external returns(bool) {
         require(tokenContract.transferFrom(msg.sender, address(this), value),"Transfer failed");
         balances[companyWallet] = safeAdd(balances[companyWallet], value);
         totalSupply = safeAdd(totalSupply, value);
         emit Transfer(msg.sender, address(this), value);
+        return true;
     }
     
     /**
@@ -370,7 +371,7 @@ contract Escrow is AuctionRegistery {
     }
 
     // Redeem via BuyBack if allowed
-    function redemption(address[] calldata path, uint256 value) external {
+    function redemption(address[] calldata path, uint256 value) external returns(bool) {
         require(balances[msg.sender] >= value, "Not enough balance");
         uint256 groupId = _getGroupId(msg.sender);
         require(groups[groupId].restriction & BUYBACK > 0, "BuyBack disallowed");
@@ -378,10 +379,11 @@ contract Escrow is AuctionRegistery {
         tokenContract.approve(address(liquidityContract), value);
         totalSupply = safeSub(totalSupply, value);
         require(liquidityContract.redemptionFromEscrow(path, value, msg.sender), "Redemption failed");
+        return true;
     }
 
     // Send token to SmartSwap P2P
-    function samartswapP2P(uint256 value) external {
+    function samartswapP2P(uint256 value) external returns(bool) {
         require(balances[msg.sender] >= value, "Not enough balance");
         uint256 groupId = _getGroupId(msg.sender);
         require(groups[groupId].restriction & SMARTSWAP_P2P > 0, "SmartSwap P2P disallowed");
@@ -389,6 +391,7 @@ contract Escrow is AuctionRegistery {
         totalSupply = safeSub(totalSupply, value);
         tokenContract.approve(address(smartswapContract), value);
         smartswapContract.sendTokenFormEscrow(address(tokenContract), value, msg.sender);
+        return true;
     }
 
     // Receive token from SmartSwap P2P in case order canceled. Called from SmartSwap P2P contract
