@@ -332,7 +332,6 @@ contract Escrow is AuctionRegistery {
         require(tokenContract.transferFrom(msg.sender, address(this), value),"Transfer failed");
         balances[companyWallet] = safeAdd(balances[companyWallet], value);
         totalSupply = safeAdd(totalSupply, value);
-        emit Transfer(msg.sender, address(this), value);
         return true;
     }
     
