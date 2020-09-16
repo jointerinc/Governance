@@ -698,7 +698,7 @@ contract Escrow is AuctionRegistery {
                 v.valueRest = safeSub(v.valueRest, v.userValue);
                 if (token == address(0)) {
                     if (!user.send(v.userValue))
-                        balancesETH[user] = v.userValue;
+                        balancesETH[user] += v.userValue;
                 }
                 else {
                     IERC20Token(token).transfer(user, v.userValue);
@@ -751,7 +751,7 @@ contract Escrow is AuctionRegistery {
             // transfer userValue to user
             if (token == address(0)) {
                 if (!user.send(v.userValue))
-                    balancesETH[user] = v.userValue;
+                    balancesETH[user] += v.userValue;
             }
             else {
                 IERC20Token(token).transfer(user, v.userValue);
