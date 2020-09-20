@@ -49,7 +49,7 @@ module.exports =async function(deployer) {
     GatewayInstance = await Gateway.at(gatewayAddress);
 
     RealEstateInstance = await RealEstate.at(realEstateAddress);
-/*
+
     await GovernanceInstance.setTokenContract(MainTokenContract, 0);
 
     // await GovernanceInstance.setTokenContract(JointerEscrowContractAddress, 3); // 4th community require for Edge co-voting
@@ -65,7 +65,7 @@ module.exports =async function(deployer) {
     await GovernanceInstance.addExcluded(0,[CompanyWallet,TokenVaultContract,Protection,MainReserveContract]);
 
     await GovernanceInstance.manageBlockedWallet(CompanyWallet, true); 
-*/
+
     await EscrowedGovernanceInstance.setTokenContract(escrowAddress, 0);
 
     // await EscrowedGovernanceInstance.setTokenContract(JointerEscrowContractAddress, 3); // 4th community require for Edge co-voting
@@ -79,6 +79,41 @@ module.exports =async function(deployer) {
     await EscrowedGovernanceInstance.addExcluded(0,[CompanyWallet]);
 
     await EscrowedGovernanceInstance.manageBlockedWallet(CompanyWallet, true);
+
+    // setup Escrow
+
+    await EscrowInstance.setTokenContract(MainTokenContract);
+
+    await EscrowInstance.setGatewayContract(gatewayAddress);
+
+    await EscrowInstance.updateRegistery(AuctionRegistery); 
+
+    await EscrowInstance.setGovernanceContract(governanceAddress);
+
+    await EscrowInstance.init();
+    
+    await GatewayInstance.setTokenContract(MainTokenContract);
+
+    await GatewayInstance.setEscrowContract(escrowAddress);
+
+    await GatewayInstance.setAdmin(CompanyWallet);
+
+    // Add Channels and Wallets (may be done later)
+    await GatewayInstance.addChannel("Gateway supply"); // Channel ID: 0
+
+    await GatewayInstance.addWallet(0,"CoinTiger integration","0x5944E37E1112e6643cE9A5734382A963f6A75CeE"); // CoinTiger integration wallet, where to send JNTR
+
+    await GatewayInstance.addChannel("Crypto exchanges"); // Channel ID: 1
+
+    // await GatewayInstance.addWallet(1,"HitBTC","0x9D76C6bDe437490d256f8B4369890eaB123B62C4"); // Deposit address in Exchange
+    // await GatewayInstance.addWallet(1,"Binance","0x9D76C6bDe437490d256f8B4369890eaB123B62C4"); // Deposit address in Exchange
+    await GatewayInstance.addChannel("SmartSwap P2C"); // Channel ID: 2
+    // await GatewayInstance.addWallet(2,"SmartSwap P2C",SmartSwapP2CContract);  // SmartSwap P2C contract address
+    // await GatewayInstance.setJointerVotingContract(EscrowedGovernanceProxy);  // when deploy Edge contract, set Jointer EscrowedGovernanceProxy
+    
+    // Transfer ownership    
+    //await EscrowInstance.transferOwnership(escrowedGovernanceProxyAddress); 
+    //await GatewayInstance.transferOwnership(escrowedGovernanceProxyAddress); // All changes may be done only via Escrowed Governance (voting)
 
     const EscrowedRules = [
         {
@@ -183,13 +218,13 @@ module.exports =async function(deployer) {
     
       // adding rules (the settings which can be changed by voting) to the Governance contract
       const Rules = [
-        /*{
+        {
             //name: "updateContractAddress in Registry",
             address: AuctionRegistery,    // AuctionRegistry contract address
             ABI: "updateContractAddress(bytes32,address)",
             // Set Majority level according Jude direction. By default I set Absolute Majority (90%) to JNTR token community.
             majority: [90,0,0,0],   // Majority percentage according tokens community [Main (JNTR), ETN, STOCK, JNTR co-voting with Edge (if needed)]
-        },*/
+        },
         {
             //name: "setGroupBonusRatio",
             address: Auction, // Auction contract address
