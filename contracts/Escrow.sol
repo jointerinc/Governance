@@ -91,6 +91,7 @@ contract Escrow is AuctionRegistery {
     uint256 internal constant DECIMAL_NOMINATOR = 10**18;
     uint256 internal constant BUYBACK = 1 << 251;
     uint256 internal constant SMARTSWAP_P2P = 1 << 252;
+    uint256 internal constant UNLOCK_TIME = 1916956800; // Buyback is locked until 30 September 2030, 00:00:00 UTC
     IERC20Token public tokenContract;
     address public governanceContract;  // public Governance contract address
     address payable public companyWallet;
@@ -371,6 +372,7 @@ contract Escrow is AuctionRegistery {
 
     // Redeem via BuyBack if allowed
     function redemption(address[] calldata path, uint256 value) external returns(bool) {
+        require(UNLOCK_TIME <= block.timestamp, "Buyback locked");
         require(balances[msg.sender] >= value, "Not enough balance");
         uint256 groupId = _getGroupId(msg.sender);
         require(groups[groupId].restriction & BUYBACK > 0, "BuyBack disallowed");
