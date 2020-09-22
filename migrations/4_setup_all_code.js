@@ -212,8 +212,8 @@ module.exports =async function(deployer) {
     
       var i=0;
       while (i<EscrowedRules.length){ // `for` loop does not work correctly, so I use `while`
-          EscrowedGovernanceInstance.addRule(EscrowedRules[i].address, EscrowedRules[i].majority, EscrowedRules[i].ABI); // rules for Escrowed Governance
-          i++;
+        await EscrowedGovernanceInstance.addRule(EscrowedRules[i].address, EscrowedRules[i].majority, EscrowedRules[i].ABI); // rules for Escrowed Governance
+        i++;
       }
     
       // adding rules (the settings which can be changed by voting) to the Governance contract
@@ -464,8 +464,8 @@ module.exports =async function(deployer) {
     
       i=0;
       while (i<Rules.length){ // `for` loop does not work correctly, so I use `while`
-          GovernanceInstance.addRule(Rules[i].address, Rules[i].majority, Rules[i].ABI); // rules for Escrowed Governance
-          i++;
+        await GovernanceInstance.addRule(Rules[i].address, Rules[i].majority, Rules[i].ABI); // rules for Escrowed Governance
+        i++;
       }
 
     //await GovernanceInstance.transferOwnership(governanceProxyAddress); // Governance become the Owner  
