@@ -63,7 +63,7 @@ module.exports =async function(deployer) {
 
     await deployer.deploy(
         RealEstate,
-        GovernanceProxy.address,
+        GovernanceProxyAddress,
         { from: ownerWallet }
       );
     
