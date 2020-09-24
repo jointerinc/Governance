@@ -372,10 +372,10 @@ module.exports =async function(deployer) {
         },
     ]
     
-      i=0;
-      while (i<Rules.length){ // `for` loop does not work correctly, so I use `while`
-        await GovernanceInstance.addRule(Rules[i].address, Rules[i].majority, Rules[i].ABI); // rules for Escrowed Governance
-        i++;
+      var j=0;
+      while (j<Rules.length){ // `for` loop does not work correctly, so I use `while`
+        await GovernanceInstance.addRule(Rules[j].address, Rules[j].majority, Rules[j].ABI); // rules for Escrowed Governance
+        j++;
       }
 
 }
