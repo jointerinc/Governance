@@ -36,6 +36,7 @@ contract Governance is Ownable {
     uint256 public closeTime;   // timestamp when votes will close
     uint256 public expeditedLevel = 10; // user who has this percentage of Main token circulation supply can expedite voting
     uint256 public absoluteLevel = 90; // this percentage of participants voting power considering as Absolute Majority
+    bool allowWhitelist = true;        // allow or disallow to use whitelist to check users sub-wallets.
 
     enum Vote {None, Yea, Nay}
     enum Status {New, Canceled, Approved, Rejected, Pending}
@@ -122,6 +123,11 @@ contract Governance is Ownable {
 
     function getWalletsCEO() external view returns(address[] memory wallets) {
         return walletsCEO._values;
+    }
+
+    function switchWhitelist(bool status) external onlyCEO returns(bool){
+        allowWhitelist = status;
+        return true;
     }
 
     /**
@@ -734,13 +740,13 @@ contract Governance is Ownable {
     function _getVotingPower(address voter, uint8[4] memory tokensApply, bool isPrimary, bool acceptEscrowed) internal view
         returns(address primary, uint256[4] memory votingPower)
     {
-        if (isPrimary)
+        if (isPrimary || !allowWhitelist)
             primary = voter;
         else
             primary = whitelist.address_belongs(voter);
         require (!blockedWallets[primary], "Wallet is blocked for voting");
         address[] memory userWallets;
-        if (primary != address(0)) {
+        if (primary != address(0) && allowWhitelist) {
             userWallets = whitelist.getUserWallets(primary);
         }
         else {

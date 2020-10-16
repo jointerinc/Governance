@@ -92,10 +92,13 @@ contract Escrow is AuctionRegistery {
     uint256 internal constant BUYBACK = 1 << 251;
     uint256 internal constant SMARTSWAP_P2P = 1 << 252;
     uint256 internal constant UNLOCK_TIME = 1916956800; // Buyback is locked until 30 September 2030, 00:00:00 UTC
+    uint8 public constant decimals = 18;
+
     IERC20Token public tokenContract;
     address public governanceContract;  // public Governance contract address
     address payable public companyWallet;
     address payable public gatewayContract;
+
 
     struct Order {
         address payable seller;
@@ -430,9 +433,11 @@ contract Escrow is AuctionRegistery {
     function confirmOrder(uint256 orderId) external {
         Order storage o = orders[orderId];
         require(o.confirmatory == msg.sender, "Not a confirmatory");
+        require(o.status == 4, "Wrong order status");
         if (o.wantValue == 0) { // if it's simple transfer, complete it immediately.
             balances[o.buyer] = safeAdd(balances[o.buyer], o.sellValue);
             o.status = 2;   // complete
+            emit Transfer(o.seller, o.buyer, o.sellValue);
         }
         else {
             o.status = 1;   // remove restriction
