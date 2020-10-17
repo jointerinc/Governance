@@ -6,11 +6,15 @@ var path = require('path');
 
 const Governance = artifacts.require("Governance"); //Governance.sol
 
-const AuctionRegistery = "";
+const AuctionRegistry = "";
 const Auction = ""; // Auction contract address
 const Liquidity = ""; // Liquidity contract address
 const Protection = ""; // Auction Protection contract address
 const WhiteListContract = "";
+const AuctionProxyRegistry = "";
+const WhiteListRegistry = "";
+const LiquidityRegistry = "";
+
 
 module.exports =async function(deployer) {
 
@@ -131,7 +135,7 @@ module.exports =async function(deployer) {
       const Rules = [
         {
             //name: "updateContractAddress in Registry",
-            address: AuctionRegistery,    // AuctionRegistry contract address
+            address: AuctionRegistry,    // AuctionRegistry contract address
             ABI: "updateContractAddress(bytes32,address)",
             // Set Majority level according Jude direction. By default I set Absolute Majority (90%) to JNTR token community.
             majority: [90,0,0,0],   // Majority percentage according tokens community [Main (JNTR), ETN, STOCK, JNTR co-voting with Edge (if needed)]
@@ -369,6 +373,30 @@ module.exports =async function(deployer) {
             address: realEstateAddress,
             ABI: "transfer(address,uint256,address)",
             majority: [75,0,0,0],
+        },
+        {
+            //name: "Open / close BuyBack",
+            address: Liquidity,
+            ABI: "setisBuyBackOpen(bool)",
+            majority: [90,0,0,0],
+        },
+        {
+            //name: "Upgrade Auction contract",
+            address: AuctionProxyRegistry,
+            ABI: "upgradeTo(uint256)",
+            majority: [90,0,0,0],
+        },
+        {
+            //name: "Upgrade Whitelist contract",
+            address: WhiteListRegistry,
+            ABI: "upgradeTo(uint256)",
+            majority: [90,0,0,0],
+        },
+        {
+            //name: "Upgrade Liquidity contract",
+            address: LiquidityRegistry,
+            ABI: "upgradeTo(uint256)",
+            majority: [90,0,0,0],
         },
     ]
     

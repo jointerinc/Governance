@@ -24,7 +24,7 @@ const WhiteListContract = "";
 const Protection = ""; // Auction Protection contract address
 const TokenVaultContract = "";
 const MainReserveContract = ""; // UniPool pair address that holds JNTR tokens
-const AuctionRegistery = "";
+const AuctionRegistry = "";
 
 module.exports =async function(deployer) {
 
@@ -84,7 +84,7 @@ module.exports =async function(deployer) {
 
     await EscrowInstance.setGatewayContract(gatewayAddress);
 
-    await EscrowInstance.updateRegistery(AuctionRegistery); 
+    await EscrowInstance.updateRegistery(AuctionRegistry); 
 
     await EscrowInstance.setGovernanceContract(governanceAddress);
 
@@ -100,6 +100,7 @@ module.exports =async function(deployer) {
     await GatewayInstance.addChannel("Gateway supply"); // Channel ID: 0
 
     await GatewayInstance.addWallet(0,"CoinTiger integration","0x5944E37E1112e6643cE9A5734382A963f6A75CeE"); // CoinTiger integration wallet, where to send JNTR
+    await GatewayInstance.addWallet(0,"Company wallet","0xc326DF3Bec90f94887d2756E03B51a222F2b0de4"); // Company wallet, where to send JNTR
 
     await GatewayInstance.addChannel("Crypto exchanges"); // Channel ID: 1
 
