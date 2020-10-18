@@ -7,6 +7,8 @@ const Escrow = artifacts.require("Escrow"); //Escrow.sol
 const Gateway = artifacts.require("Gateway");
 const Governance = artifacts.require("Governance"); //Governance.sol
 
+const {ownerWallet,CompanyWallet,CEOwallet } = require("../constant");
+
 module.exports =async function(deployer) {
 
     currentdata = await readFileAsync(path.resolve(__dirname, '../latestContract.json'));
@@ -26,7 +28,9 @@ module.exports =async function(deployer) {
 
     await EscrowInstance.transferOwnership(escrowedGovernanceProxyAddress); 
     await GatewayInstance.transferOwnership(escrowedGovernanceProxyAddress); // All changes may be done only via Escrowed Governance (voting)
-    await GovernanceInstance.transferOwnership(governanceProxyAddress); // Governance become the Owner  
-    await EscrowedGovernanceInstance.transferOwnership(escrowedGovernanceProxyAddress); 
+    //await GovernanceInstance.transferOwnership(governanceProxyAddress); // Governance become the Owner  
+    //await EscrowedGovernanceInstance.transferOwnership(escrowedGovernanceProxyAddress); 
+    await GovernanceInstance.transferOwnership(CompanyWallet); // Governance become the Owner  
+    await EscrowedGovernanceInstance.transferOwnership(CompanyWallet); 
 
 }
